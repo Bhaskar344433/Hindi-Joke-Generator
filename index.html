@@ -3,52 +3,94 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>हिंदी चुटकुला जनरेटर</title>
+    <meta
+      name="description"
+      content="कॉलेज, टेक, दोस्ती और रोज़मर्रा की ज़िंदगी से जुड़े नए हिंदी चुटकुले।"
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <title>हँसी अड्डा — हिंदी चुटकुले</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
   </head>
   <body>
-    <div class="background-glow glow-1"></div>
-    <div class="background-glow glow-2"></div>
+    <div class="background-glow glow-1" aria-hidden="true"></div>
+    <div class="background-glow glow-2" aria-hidden="true"></div>
 
     <main class="app">
-      <section class="card">
+      <section class="card" aria-labelledby="title">
         <div class="header-row">
-          <span class="badge">✨ मज़ा</span>
-          <button id="themeToggle" class="theme-btn" aria-label="Toggle theme">🌙</button>
+          <span class="badge">☕ अपना हँसी अड्डा</span>
+          <button
+            id="themeToggle"
+            class="mini-btn"
+            type="button"
+            aria-label="हल्की थीम चालू करें"
+            title="थीम बदलें"
+          >
+            ☀️
+          </button>
         </div>
 
-        <h1>हिंदी चुटकुला जनरेटर</h1>
-        <p class="subtitle">आज का व्यंग्य या मज़ेदार समय</p>
+        <h1 id="title">हँसी अड्डा</h1>
+        <p class="subtitle">देसी ज़िंदगी, नई पीढ़ी वाली हँसी 😄</p>
 
         <div class="controls">
-          <label for="category">श्रेणी चुनें</label>
+          <label for="category">आज किस बात पर हँसें?</label>
           <select id="category">
-            <option value="Any">सभी</option>
-            <option value="Programming">प्रोग्रामिंग</option>
-            <option value="Misc">मिश्र</option>
-            <option value="Dark">डार्क</option>
-            <option value="Pun">पुन</option>
-            <option value="Spooky">भूतिया</option>
-            <option value="Christmas">क्रिसमस</option>
+            <option value="all">सबका मज़ा</option>
+            <option value="college">कॉलेज और पढ़ाई</option>
+            <option value="tech">टेक और सोशल मीडिया</option>
+            <option value="family">घर-परिवार</option>
+            <option value="friends">यार-दोस्ती</option>
+            <option value="daily">रोज़मर्रा की देसी ज़िंदगी</option>
           </select>
         </div>
 
-        <div class="button-row">
-          <button id="generateBtn" class="primary-btn">अगला मज़ा</button>
-          <button id="copyBtn" class="secondary-btn">कॉपी करें</button>
-        </div>
-
-        <div id="jokeBox" class="joke-box" aria-live="polite">
-          एक मज़ेदार चुटकुला लोड हो रहा है...
+        <div id="jokeBox" class="joke-box" aria-live="polite" aria-atomic="true">
+          एक चुटकुला चुन रहे हैं...
         </div>
 
         <div class="meta-row">
-          <span id="categoryTag" class="tag">सभी</span>
-          <span id="statusText" class="status">तैयार</span>
+          <span id="categoryTag" class="tag">सबका मज़ा</span>
+          <span id="statusText" class="status" role="status">तैयार</span>
         </div>
+
+        <div class="button-row">
+          <button id="generateBtn" class="primary-btn" type="button">
+            एक और सुनाओ
+          </button>
+          <button
+            id="favoriteBtn"
+            class="secondary-btn"
+            type="button"
+            aria-pressed="false"
+          >
+            ♡ पसंद में जोड़ें
+          </button>
+          <button id="shareBtn" class="secondary-btn alt" type="button">
+            ↗ शेयर करें
+          </button>
+        </div>
+
+        <p class="note">सारे चुटकुले यहीं हैं — इंटरनेट की ज़रूरत नहीं।</p>
+      </section>
+
+      <section class="panel" aria-labelledby="favoritesTitle">
+        <div class="panel-header">
+          <h2 id="favoritesTitle">❤️ पसंदीदा</h2>
+          <button id="clearFavorites" class="mini-btn danger" type="button">
+            साफ़ करें
+          </button>
+        </div>
+        <ul id="favoritesList" class="list"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="historyTitle">
+        <div class="panel-header">
+          <h2 id="historyTitle">🕘 अभी-अभी सुने</h2>
+        </div>
+        <ul id="historyList" class="list"></ul>
       </section>
     </main>
-
-    <script src="script.js"></script>
   </body>
 </html>
