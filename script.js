@@ -175,12 +175,42 @@ const themeToggle = document.getElementById('themeToggle');
 const storageKeys = {
   favorites: 'hansiAddaFavorites',
   history: 'hansiAddaHistory',
+  generated: 'hansiAddaGeneratedJokes',
   theme: 'hansiAddaTheme',
 };
 
 let currentJoke = null;
+let generatedJokes = loadGeneratedJokes();
+jokes.push(...generatedJokes);
 let favorites = loadSavedIds(storageKeys.favorites);
 let history = loadSavedIds(storageKeys.history);
+
+function loadGeneratedJokes() {
+  try {
+    const saved = localStorage.getItem(storageKeys.generated);
+    if (!saved) return [];
+
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) {
+      throw new Error('Saved generated jokes are not a list.');
+    }
+
+    return parsed.filter(
+      (joke) =>
+        joke &&
+        typeof joke.id === 'string' &&
+        joke.id.startsWith('ai-') &&
+        Object.hasOwn(categoryNames, joke.category) &&
+        joke.category !== 'all' &&
+        typeof joke.text === 'string' &&
+        joke.text.length > 0 &&
+        joke.text.length <= 500,
+    );
+  } catch (error) {
+    console.error('Could not load generated jokes.', error);
+    return [];
+  }
+}
 
 function findJoke(id) {
   return jokes.find((joke) => joke.id === id);
@@ -268,20 +298,112 @@ function getAvailableJokes() {
   );
 }
 
-function showNextJoke() {
+function showOfflineJoke() {
   const availableJokes = getAvailableJokes();
   const choices = availableJokes.filter((joke) => joke.id !== currentJoke?.id);
   const pool = choices.length > 0 ? choices : availableJokes;
   currentJoke = pool[Math.floor(Math.random() * pool.length)];
+}
 
-  history = [currentJoke.id, ...history.filter((id) => id !== currentJoke.id)].slice(
-    0,
-    5,
-  );
+function rememberCurrentJoke() {
+  history = [
+    currentJoke.id,
+    ...history.filter((id) => id !== currentJoke.id),
+  ].slice(0, 5);
   saveIds(storageKeys.history, history);
   renderJoke();
   renderSavedLists();
-  setStatus('तैयार');
+}
+
+function saveGeneratedJoke(joke) {
+  jokes.push(joke);
+  generatedJokes.push(joke);
+  generatedJokes = generatedJokes.slice(-100);
+  const savedIds = new Set(generatedJokes.map((item) => item.id));
+  for (let index = jokes.length - 1; index >= 0; index -= 1) {
+    if (jokes[index].id.startsWith('ai-') && !savedIds.has(jokes[index].id)) {
+      jokes.splice(index, 1);
+    }
+  }
+
+  return saveIds(storageKeys.generated, generatedJokes);
+}
+
+async function showNextJoke() {
+  const category = categorySelect.value;
+  const previousJoke = currentJoke;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  generateBtn.disabled = true;
+  categorySelect.disabled = true;
+  jokeBox.classList.add('loading');
+  jokeBox.textContent = 'आपके लिए नया हिंदी जोक बना रहे हैं...';
+  setStatus('AI से नया जोक बन रहा है');
+
+  try {
+    const recentJokes = history
+      .map(findJoke)
+      .filter(Boolean)
+      .map((joke) => joke.text);
+    const response = await fetch('/api/joke', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category, recentJokes }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Joke service returned ${response.status}.`);
+    }
+
+    const result = await response.json();
+    const jokeText = typeof result.joke === 'string' ? result.joke.trim() : '';
+    const jokeCategory =
+      category === 'all' && Object.hasOwn(categoryNames, result.category)
+        ? result.category
+        : category;
+    const recentJokeTexts = new Set(
+      history
+        .map(findJoke)
+        .filter(Boolean)
+        .map((joke) => joke.text.trim().toLocaleLowerCase()),
+    );
+
+    if (
+      jokeText.length < 10 ||
+      jokeText.length > 500 ||
+      !/[\u0900-\u097f]/.test(jokeText) ||
+      recentJokeTexts.has(jokeText.toLocaleLowerCase()) ||
+      jokeCategory === 'all'
+    ) {
+      throw new Error('Joke service returned an invalid joke.');
+    }
+
+    currentJoke = {
+      id: `ai-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      category: jokeCategory,
+      text: jokeText,
+    };
+    const saved = saveGeneratedJoke(currentJoke);
+    rememberCurrentJoke();
+    setStatus(saved ? 'नया AI जोक' : 'नया जोक मिला, लेकिन सेव नहीं हो पाया');
+  } catch (error) {
+    console.warn('Online joke generation unavailable; showing an offline joke.');
+    currentJoke = previousJoke;
+    showOfflineJoke();
+    rememberCurrentJoke();
+    setStatus(
+      error instanceof Error && error.name === 'AbortError'
+        ? 'AI में देर हुई; ऑफ़लाइन जोक दिखाया'
+        : 'ऑनलाइन AI सेट नहीं; ऑफ़लाइन जोक दिखाया',
+    );
+  } finally {
+    clearTimeout(timeout);
+    jokeBox.classList.remove('loading');
+    generateBtn.disabled = false;
+    categorySelect.disabled = false;
+  }
 }
 
 function toggleFavorite() {
