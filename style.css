@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="hi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>हिंदी चुटकुला जनरेटर</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="background-glow glow-1"></div>
+    <div class="background-glow glow-2"></div>
+
+    <main class="app">
+      <section class="card">
+        <div class="header-row">
+          <span class="badge">✨ मज़ा</span>
+          <div class="top-actions">
+            <button id="langToggle" class="mini-btn" aria-label="Toggle language">English</button>
+            <button id="themeToggle" class="mini-btn" aria-label="Toggle theme">🌙</button>
+          </div>
+        </div>
+
+        <h1 id="title">हिंदी चुटकुला जनरेटर</h1>
+        <p id="subtitle" class="subtitle">आज का व्यंग्य या मज़ेदार समय</p>
+
+        <div class="controls-grid">
+          <div class="control-box">
+            <label id="moodLabel" for="mood">मूड चुनें</label>
+            <select id="mood">
+              <option value="random">रैंडम</option>
+              <option value="funny">मज़ेदार</option>
+              <option value="sarcastic">व्यंग्य</option>
+              <option value="programming">प्रोग्रामिंग</option>
+            </select>
+          </div>
+
+          <div class="control-box">
+            <label id="categoryLabel" for="category">श्रेणी</label>
+            <select id="category">
+              <option value="Any">सभी</option>
+              <option value="Programming">प्रोग्रामिंग</option>
+              <option value="Misc">मिश्र</option>
+              <option value="Dark">डार्क</option>
+              <option value="Pun">पुन</option>
+              <option value="Spooky">भूतिया</option>
+              <option value="Christmas">क्रिसमस</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="generateBtn" class="primary-btn">अगला मज़ा</button>
+          <button id="copyBtn" class="secondary-btn">कॉपी करें</button>
+          <button id="shareBtn" class="secondary-btn alt">शेयर</button>
+        </div>
+
+        <div class="toggle-row">
+          <label class="switch">
+            <input id="autoRefresh" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+          <span id="autoRefreshLabel">ऑटो रिफ्रेश बंद</span>
+        </div>
+
+        <div id="jokeBox" class="joke-box" aria-live="polite">
+          एक मज़ेदार चुटकुला लोड हो रहा है...
+        </div>
+
+        <div class="meta-row">
+          <span id="categoryTag" class="tag">सभी</span>
+          <span id="statusText" class="status">तैयार</span>
+        </div>
+
+        <div class="vote-row">
+          <button id="likeBtn" class="vote-btn">👍 पसंद</button>
+          <button id="dislikeBtn" class="vote-btn">👎 नहीं पसंद</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2 id="favoritesTitle">पसंदीदा</h2>
+          <button id="clearFavorites" class="mini-btn danger">साफ़</button>
+        </div>
+        <ul id="favoritesList" class="list"></ul>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2 id="historyTitle">हालिया इतिहास</h2>
+        </div>
+        <ul id="historyList" class="list"></ul>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

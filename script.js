@@ -1,78 +1,370 @@
-const jokeBox = document.getElementById('jokeBox');
-const categorySelect = document.getElementById('category');
-const generateBtn = document.getElementById('generateBtn');
-const copyBtn = document.getElementById('copyBtn');
-const categoryTag = document.getElementById('categoryTag');
-const statusText = document.getElementById('statusText');
-const themeToggle = document.getElementById('themeToggle');
-
-let currentJoke = '';
-
-function updateCategoryTag() {
-  const selected = categorySelect.value;
-  categoryTag.textContent = selected === 'Any' ? 'सभी' : selected;
+* {
+  box-sizing: border-box;
 }
 
-async function fetchJoke() {
-  const category = categorySelect.value;
-  const endpoint = category === 'Any' ? 'https://v2.jokeapi.dev/joke/Any?type=single' : `https://v2.jokeapi.dev/joke/${category}?type=single`;
+:root {
+  --bg1: #0f172a;
+  --bg2: #1e293b;
+  --card: rgba(15, 23, 42, 0.72);
+  --panel: rgba(15, 23, 42, 0.64);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+  --primary: #f59e0b;
+  --primary-dark: #d97706;
+  --secondary: #22c55e;
+  --secondary-dark: #16a34a;
+  --danger: #ef4444;
+  --danger-dark: #dc2626;
+  --shadow: rgba(0, 0, 0, 0.32);
+}
 
-  jokeBox.textContent = 'मज़ेदार लोड हो रहा है...';
-  jokeBox.classList.add('loading');
-  statusText.textContent = 'लोड हो रहा है';
+body.light-theme {
+  --bg1: #fef3c7;
+  --bg2: #fef9c3;
+  --card: rgba(255, 255, 255, 0.72);
+  --panel: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(15, 23, 42, 0.12);
+  --text: #1f2937;
+  --muted: #4b5563;
+  --primary: #f59e0b;
+  --primary-dark: #d97706;
+  --secondary: #10b981;
+  --secondary-dark: #059669;
+  --danger: #ef4444;
+  --danger-dark: #dc2626;
+  --shadow: rgba(148, 163, 184, 0.28);
+}
 
-  try {
-    const response = await fetch(endpoint);
-    const data = await response.json();
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2));
+  color: var(--text);
+  transition: all 0.3s ease;
+}
 
-    if (!response.ok || data.error) {
-      throw new Error(data.message || 'जोक नहीं मिला');
-    }
+.background-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  z-index: 0;
+}
 
-    currentJoke = data.joke || 'आज का मज़ा नहीं मिला। फिर कोशिश करें!';
-    jokeBox.textContent = currentJoke;
-    statusText.textContent = 'तैयार';
-  } catch (error) {
-    currentJoke = 'ओह! मज़ा लोड नहीं हुआ। थोड़ी देर बाद फिर कोशिश करें।';
-    jokeBox.textContent = currentJoke;
-    statusText.textContent = 'त्रुटि';
-    console.error(error);
-  } finally {
-    jokeBox.classList.remove('loading');
+.glow-1 {
+  width: 280px;
+  height: 280px;
+  background: rgba(244, 114, 182, 0.25);
+  top: 8%;
+  left: 5%;
+}
+
+.glow-2 {
+  width: 320px;
+  height: 320px;
+  background: rgba(96, 165, 250, 0.22);
+  right: 8%;
+  bottom: 8%;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  width: min(96vw, 980px);
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.card,
+.panel {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.card {
+  padding: 2rem;
+}
+
+.panel {
+  padding: 1rem 1rem 0.75rem;
+  background: var(--panel);
+}
+
+.header-row,
+.top-actions,
+.meta-row,
+.vote-row,
+.button-row,
+.toggle-row,
+.panel-header {
+  display: flex;
+  align-items: center;
+}
+
+.header-row,
+.panel-header {
+  justify-content: space-between;
+}
+
+.top-actions {
+  gap: 0.5rem;
+}
+
+.badge {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.36);
+  color: var(--primary);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.mini-btn {
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.6rem 0.8rem;
+  font-weight: 700;
+}
+
+.mini-btn.danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+h1 {
+  margin: 1rem 0 0.25rem;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.subtitle {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.control-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+label {
+  font-weight: 700;
+  color: var(--muted);
+}
+
+select {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.button-row,
+.vote-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn {
+  flex: 1;
+  min-width: 150px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+}
+
+.secondary-btn {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+  color: white;
+}
+
+.secondary-btn.alt {
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+}
+
+.vote-btn {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+}
+
+.toggle-row {
+  gap: 0.8rem;
+  margin-bottom: 1.1rem;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: rgba(255,255,255,0.15);
+  border-radius: 34px;
+  transition: 0.3s ease;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s ease;
+}
+
+.switch input:checked + .slider {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.joke-box {
+  min-height: 160px;
+  padding: 1.2rem 1rem;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--card-border);
+  line-height: 1.8;
+  font-size: 1.08rem;
+}
+
+.loading {
+  opacity: 0.8;
+}
+
+.meta-row {
+  justify-content: space-between;
+  margin-top: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tag,
+.status {
+  display: inline-block;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.tag {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+}
+
+.status {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+}
+
+.panel h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.1rem;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.list li {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.list li:hover {
+  transform: translateX(2px);
+}
+
+.empty-list {
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+}
+
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 1fr;
   }
 }
 
-async function copyJoke() {
-  if (!currentJoke) return;
+@media (max-width: 560px) {
+  .card {
+    padding: 1.2rem;
+  }
 
-  try {
-    await navigator.clipboard.writeText(currentJoke);
-    statusText.textContent = 'कॉपी हो गया';
-    copyBtn.textContent = 'कॉपी हो गया';
-    setTimeout(() => {
-      copyBtn.textContent = 'कॉपी करें';
-      statusText.textContent = 'तैयार';
-    }, 1200);
-  } catch (error) {
-    statusText.textContent = 'कॉपी नहीं हुआ';
-    console.error(error);
+  .controls-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .button-row,
+  .vote-row {
+    flex-direction: column;
   }
 }
-
-function toggleTheme() {
-  document.body.classList.toggle('light-theme');
-  const isLight = document.body.classList.contains('light-theme');
-  themeToggle.textContent = isLight ? '🌙' : '☀️';
-}
-
-categorySelect.addEventListener('change', () => {
-  updateCategoryTag();
-  fetchJoke();
-});
-
-generateBtn.addEventListener('click', fetchJoke);
-copyBtn.addEventListener('click', copyJoke);
-themeToggle.addEventListener('click', toggleTheme);
-
-updateCategoryTag();
-fetchJoke();
